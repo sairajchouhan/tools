@@ -32,16 +32,18 @@ function Index() {
   
 
   useEffect(() => {
-    localStorage.setItem("url", url);
     if (url) {
+      localStorage.setItem("url", url);
       try {
-        const urlObj = new URL(url);
+        // Remove hashbang pattern if present
+        const cleanUrl = url.replace("/#!", "/");
+        const urlObj = new URL(cleanUrl);
 
         // Only update path segments if they don't exist or if URL was manually changed
         setParsedUrl(prev => {
           // If we have existing path segments and URL wasn't manually changed, keep them
           const shouldKeepExistingSegments = prev.pathSegments.length > 0 && 
-            prev.hostname === urlObj.hostname && 
+            prev.hostname === (urlObj.port ? `${urlObj.hostname}:${urlObj.port}` : urlObj.hostname) && 
             prev.protocol === urlObj.protocol.replace(":", "");
 
           const newPathSegments = shouldKeepExistingSegments
@@ -62,7 +64,7 @@ function Index() {
 
           return {
             protocol: urlObj.protocol.replace(":", ""),
-            hostname: urlObj.hostname,
+            hostname: urlObj.port ? `${urlObj.hostname}:${urlObj.port}` : urlObj.hostname,
             pathSegments: newPathSegments,
             queryParams,
             hash: urlObj.hash.replace("#", "")
@@ -78,6 +80,16 @@ function Index() {
           hash: "",
         });
       }
+    }else {
+      localStorage.removeItem("url")
+      setUrl("")
+      setParsedUrl({
+        protocol: "",
+        hostname: "",
+        pathSegments: [],
+        queryParams: [],
+        hash: "",
+      })
     }
   }, [url]);
 
