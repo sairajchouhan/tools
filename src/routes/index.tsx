@@ -145,7 +145,7 @@ function Index() {
   };
 
   return (
-    <div className="w-2/5 mx-auto p-4">
+    <div className="mx-auto p-4 w-full sm:w-full md:w-3/4 lg:w-3/5">
       <div className="grid w-full items-center gap-1.5">
         <Label htmlFor="url">URL</Label>
         <div className="flex gap-2">
