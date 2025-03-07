@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Copy } from "lucide-react";
+import { Check, Copy, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -11,6 +11,7 @@ type QueryParam = { key: string; value: string };
 type PathSegment = { id: string; value: string };
 
 function Index() {
+  const [copied, setCopied] = useState(false);
   const [url, setUrl] = useState(() => {
     const savedUrl = localStorage.getItem("url");
     return savedUrl || "";
@@ -158,11 +159,23 @@ function Index() {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => {
-              navigator.clipboard.writeText(url);
+            onClick={async () => {
+              await navigator.clipboard.writeText(url);
+              const button = document.querySelector('[data-copy-button]');
+              if (button) {
+                button.classList.add('scale-90');
+                setTimeout(() => button.classList.remove('scale-90'), 100);
+              }
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1000);
             }}
+            data-copy-button
           >
-            <Copy className="h-4 w-4" />
+            {copied ? (
+              <Check className="h-4 w-4 text-green-500" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>
