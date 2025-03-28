@@ -3,7 +3,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Plus, Trash2, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 export const Route = createFileRoute("/url-parser")({
   component: UrlParser,
@@ -11,7 +11,131 @@ export const Route = createFileRoute("/url-parser")({
 
 function UrlParser() {
   const [copied, setCopied] = useState(false);
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("https://example.com/path/to/resource?param1=value1&param2=value2");
+
+  // Parse URL
+  const { pathSegments, queryParams, urlObj } = useMemo(() => {
+    try {
+      const urlObj = new URL(url);
+      
+      // Parse path segments
+      const pathSegments = urlObj.pathname
+        .split('/')
+        .filter(segment => segment.length > 0);
+      
+      // Parse query parameters
+      const queryParams = Array.from(urlObj.searchParams.entries())
+        .map(([key, value]) => ({ key, value }));
+        
+      return { pathSegments, queryParams, urlObj };
+    } catch {
+      // Return empty values if URL is invalid
+      return { 
+        pathSegments: [],
+        queryParams: [],
+        urlObj: null
+      };
+    }
+  }, [url]);
+
+  // Update URL when path segments change
+  const handlePathSegmentChange = useCallback((index: number, newValue: string) => {
+    if (!urlObj) return;
+
+    const newPathSegments = [...pathSegments];
+    newPathSegments[index] = newValue;
+    
+    const newPathname = '/' + newPathSegments.join('/');
+    const newUrl = new URL(urlObj.toString());
+    newUrl.pathname = newPathname;
+    
+    setUrl(newUrl.toString());
+  }, [pathSegments, urlObj]);
+
+  // Update URL when query parameters change
+  const handleQueryParamChange = useCallback((index: number, field: 'key' | 'value', newValue: string) => {
+    if (!urlObj) return;
+    
+    const newParams = [...queryParams];
+    const oldParam = newParams[index];
+    
+    // Create a new object to avoid mutation
+    newParams[index] = { 
+      ...oldParam,
+      [field]: newValue 
+    };
+    
+    // Create a new URL object
+    const newUrl = new URL(urlObj.toString());
+    
+    // Clear all existing params
+    newUrl.search = '';
+    
+    // Add all params back
+    newParams.forEach(param => {
+      if (param.key) {
+        newUrl.searchParams.append(param.key, param.value);
+      }
+    });
+    
+    setUrl(newUrl.toString());
+  }, [queryParams, urlObj]);
+
+  // Add a new path segment
+  const handleAddPathSegment = useCallback(() => {
+    if (!urlObj) return;
+    
+    const newPathSegments = [...pathSegments, ''];
+    const newPathname = '/' + newPathSegments.join('/');
+    
+    const newUrl = new URL(urlObj.toString());
+    newUrl.pathname = newPathname;
+    
+    setUrl(newUrl.toString());
+  }, [pathSegments, urlObj]);
+
+  // Add a new query parameter
+  const handleAddQueryParam = useCallback(() => {
+    if (!urlObj) return;
+    
+    const newUrl = new URL(urlObj.toString());
+    newUrl.searchParams.append('', '');
+    
+    setUrl(newUrl.toString());
+  }, [urlObj]);
+
+  // Remove a path segment
+  const handleRemovePathSegment = useCallback((index: number) => {
+    if (!urlObj) return;
+    
+    const newPathSegments = [...pathSegments];
+    newPathSegments.splice(index, 1);
+    
+    const newPathname = '/' + newPathSegments.join('/');
+    const newUrl = new URL(urlObj.toString());
+    newUrl.pathname = newPathname;
+    
+    setUrl(newUrl.toString());
+  }, [pathSegments, urlObj]);
+
+  // Remove a query parameter
+  const handleRemoveQueryParam = useCallback((index: number) => {
+    if (!urlObj) return;
+    
+    const newParams = [...queryParams];
+    newParams.splice(index, 1);
+    
+    const newUrl = new URL(urlObj.toString());
+    newUrl.search = '';
+    
+    newParams.forEach(param => {
+      if (param.key) {
+        newUrl.searchParams.append(param.key, param.value);
+      }
+    });
+    
+    setUrl(newUrl.toString());
+  }, [queryParams, urlObj]);
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(url).then(() => {
@@ -43,7 +167,7 @@ function UrlParser() {
               onClick={handleCopyUrl}
             >
               {copied ? (
-                <Check className="h-4 w-4" />
+                <Check className="h-4 w-4 text-green-500" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
@@ -57,45 +181,39 @@ function UrlParser() {
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Path Segments</h2>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleAddPathSegment}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add Segment
               </Button>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-medium mr-3">1</span>
-                <Input 
-                  className="font-mono" 
-                  placeholder="path segment" 
-                  defaultValue="path"
-                />
-                <Button variant="ghost" size="icon" className="ml-2">
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </div>
-              <div className="flex items-center">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-medium mr-3">2</span>
-                <Input 
-                  className="font-mono" 
-                  placeholder="path segment" 
-                  defaultValue="to"
-                />
-                <Button variant="ghost" size="icon" className="ml-2">
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </div>
-              <div className="flex items-center">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-medium mr-3">3</span>
-                <Input 
-                  className="font-mono" 
-                  placeholder="path segment" 
-                  defaultValue="resource"
-                />
-                <Button variant="ghost" size="icon" className="ml-2">
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </div>
+              {pathSegments.length > 0 ? (
+                pathSegments.map((segment, index) => (
+                  <div key={index} className="flex items-center">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-medium mr-3">
+                      {index + 1}
+                    </span>
+                    <Input 
+                      className="font-mono" 
+                      placeholder="path segment" 
+                      value={segment}
+                      onChange={(e) => handlePathSegmentChange(index, e.target.value)}
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="ml-2"
+                      onClick={() => handleRemovePathSegment(index)}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No path segments found
+                </div>
+              )}
             </div>
           </div>
           
@@ -103,58 +221,50 @@ function UrlParser() {
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Query Parameters</h2>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleAddQueryParam}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add Parameter
               </Button>
             </div>
             <div className="space-y-3">
-              <div>
-                <div className="flex items-center">
-                  <div className="flex-1 grid grid-cols-3 gap-3">
-                    <div className="col-span-1">
-                      <Input 
-                        className="font-mono bg-gray-50" 
-                        placeholder="Key" 
-                        defaultValue="param1"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input 
-                        className="font-mono" 
-                        placeholder="Value" 
-                        defaultValue="value1"
-                      />
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" className="ml-2">
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center">
-                  <div className="flex-1 grid grid-cols-3 gap-3">
-                    <div className="col-span-1">
-                      <Input 
-                        className="font-mono bg-gray-50" 
-                        placeholder="Key" 
-                        defaultValue="param2"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input 
-                        className="font-mono" 
-                        placeholder="Value" 
-                        defaultValue="value2"
-                      />
+              {queryParams.length > 0 ? (
+                queryParams.map((param, index) => (
+                  <div key={index}>
+                    <div className="flex items-center">
+                      <div className="flex-1 grid grid-cols-3 gap-3">
+                        <div className="col-span-1">
+                          <Input 
+                            className="font-mono bg-gray-50" 
+                            placeholder="Key" 
+                            value={param.key}
+                            onChange={(e) => handleQueryParamChange(index, 'key', e.target.value)}
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Input 
+                            className="font-mono" 
+                            placeholder="Value" 
+                            value={param.value}
+                            onChange={(e) => handleQueryParamChange(index, 'value', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="ml-2"
+                        onClick={() => handleRemoveQueryParam(index)}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="ml-2">
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No query parameters found
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
