@@ -3,7 +3,11 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Plus, Trash2, Copy, Check } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import debounce from "lodash.debounce";
+
+// Local storage key
+const URL_STORAGE_KEY = 'url-parser-url';
 
 export const Route = createFileRoute("/url-parser")({
   component: UrlParser,
@@ -11,7 +15,34 @@ export const Route = createFileRoute("/url-parser")({
 
 function UrlParser() {
   const [copied, setCopied] = useState(false);
-  const [url, setUrl] = useState("https://example.com/path/to/resource?param1=value1&param2=value2");
+  // Get initial URL from localStorage or use default
+  const [url, setUrlState] = useState(() => {
+    const savedUrl = localStorage.getItem(URL_STORAGE_KEY);
+    return savedUrl || "https://example.com/path/to/resource?param1=value1&param2=value2";
+  });
+
+  // Create a debounced localStorage save function
+  const debouncedSave = useRef(
+    debounce((value: string) => {
+      localStorage.setItem(URL_STORAGE_KEY, value);
+    }, 500)
+  ).current;
+
+  // Function to update URL with debounced localStorage persistence
+  const setUrl = useCallback((newUrl: string) => {
+    // Update state immediately
+    setUrlState(newUrl);
+    
+    // Debounced save to localStorage
+    debouncedSave(newUrl);
+  }, [debouncedSave]);
+
+  // Clean up debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSave.cancel();
+    };
+  }, [debouncedSave]);
 
   // Parse URL
   const { pathSegments, queryParams, urlObj } = useMemo(() => {
@@ -50,7 +81,7 @@ function UrlParser() {
     newUrl.pathname = newPathname;
     
     setUrl(newUrl.toString());
-  }, [pathSegments, urlObj]);
+  }, [pathSegments, urlObj, setUrl]);
 
   // Update URL when query parameters change
   const handleQueryParamChange = useCallback((index: number, field: 'key' | 'value', newValue: string) => {
@@ -79,7 +110,7 @@ function UrlParser() {
     });
     
     setUrl(newUrl.toString());
-  }, [queryParams, urlObj]);
+  }, [queryParams, urlObj, setUrl]);
 
   // Add a new path segment
   const handleAddPathSegment = useCallback(() => {
@@ -92,7 +123,7 @@ function UrlParser() {
     newUrl.pathname = newPathname;
     
     setUrl(newUrl.toString());
-  }, [pathSegments, urlObj]);
+  }, [pathSegments, urlObj, setUrl]);
 
   // Add a new query parameter
   const handleAddQueryParam = useCallback(() => {
@@ -102,7 +133,7 @@ function UrlParser() {
     newUrl.searchParams.append('', '');
     
     setUrl(newUrl.toString());
-  }, [urlObj]);
+  }, [urlObj, setUrl]);
 
   // Remove a path segment
   const handleRemovePathSegment = useCallback((index: number) => {
@@ -116,7 +147,7 @@ function UrlParser() {
     newUrl.pathname = newPathname;
     
     setUrl(newUrl.toString());
-  }, [pathSegments, urlObj]);
+  }, [pathSegments, urlObj, setUrl]);
 
   // Remove a query parameter
   const handleRemoveQueryParam = useCallback((index: number) => {
@@ -135,7 +166,7 @@ function UrlParser() {
     });
     
     setUrl(newUrl.toString());
-  }, [queryParams, urlObj]);
+  }, [queryParams, urlObj, setUrl]);
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(url).then(() => {
