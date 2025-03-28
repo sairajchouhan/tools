@@ -32,11 +32,14 @@ function UrlParser() {
 
   // Function to update URL with debounced localStorage persistence
   const setUrl = useCallback((newUrl: string) => {
+    // remove hash-bang (#!) notation if present
+    const cleanedUrl = newUrl.replace(/\/#!/, '');
+    
     // Update state immediately
-    setUrlState(newUrl);
+    setUrlState(cleanedUrl);
     
     // Debounced save to localStorage
-    debouncedSave(newUrl);
+    debouncedSave(cleanedUrl);
   }, [debouncedSave]);
 
   // Clean up debounced function on unmount
@@ -49,9 +52,7 @@ function UrlParser() {
   // Parse URL
   const { pathSegments, queryParams, urlObj } = useMemo(() => {
     try {
-      // Remove hash-bang (#!) notation if present
-      const cleanedUrl = url.replace(/#!/, '');
-      const urlObj = new URL(cleanedUrl);
+      const urlObj = new URL(url);
       
       // Parse path segments
       const pathSegments = urlObj.pathname
