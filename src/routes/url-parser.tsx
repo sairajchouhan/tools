@@ -202,8 +202,6 @@ function UrlParser() {
 
   return (
     <div className="container mx-auto py-8 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">URL Parser</h1>
-
       <div className="space-y-8">
         {/* URL Input */}
         <div className="bg-white p-6 rounded-lg shadow-sm">
