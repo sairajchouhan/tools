@@ -30,7 +30,7 @@ function UrlParser() {
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Path Segments</h2>
-              <Button variant="ghost" size="sm" className="h-8 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50">
+              <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-1" />
                 Add Segment
               </Button>
@@ -43,7 +43,7 @@ function UrlParser() {
                   placeholder="path segment" 
                   defaultValue="path"
                 />
-                <Button variant="ghost" size="sm" className="ml-2 h-8 w-8 p-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -54,7 +54,7 @@ function UrlParser() {
                   placeholder="path segment" 
                   defaultValue="to"
                 />
-                <Button variant="ghost" size="sm" className="ml-2 h-8 w-8 p-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -65,7 +65,7 @@ function UrlParser() {
                   placeholder="path segment" 
                   defaultValue="resource"
                 />
-                <Button variant="ghost" size="sm" className="ml-2 h-8 w-8 p-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -76,7 +76,7 @@ function UrlParser() {
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Query Parameters</h2>
-              <Button variant="ghost" size="sm" className="h-8 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50">
+              <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-1" />
                 Add Parameter
               </Button>
@@ -100,7 +100,7 @@ function UrlParser() {
                       />
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="ml-2 h-8 w-8 p-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -123,7 +123,7 @@ function UrlParser() {
                       />
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="ml-2 h-8 w-8 p-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
