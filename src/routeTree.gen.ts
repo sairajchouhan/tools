@@ -11,11 +11,18 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as UrlParserImport } from './routes/url-parser'
 import { Route as AsdfImport } from './routes/asdf'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const UrlParserRoute = UrlParserImport.update({
+  id: '/url-parser',
+  path: '/url-parser',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AsdfRoute = AsdfImport.update({
   id: '/asdf',
@@ -60,6 +67,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AsdfImport
       parentRoute: typeof rootRoute
     }
+    '/url-parser': {
+      id: '/url-parser'
+      path: '/url-parser'
+      fullPath: '/url-parser'
+      preLoaderRoute: typeof UrlParserImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -69,12 +83,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
+  '/url-parser': typeof UrlParserRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
+  '/url-parser': typeof UrlParserRoute
 }
 
 export interface FileRoutesById {
@@ -82,14 +98,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
+  '/url-parser': typeof UrlParserRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/asdf'
+  fullPaths: '/' | '/about' | '/asdf' | '/url-parser'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/asdf'
-  id: '__root__' | '/' | '/about' | '/asdf'
+  to: '/' | '/about' | '/asdf' | '/url-parser'
+  id: '__root__' | '/' | '/about' | '/asdf' | '/url-parser'
   fileRoutesById: FileRoutesById
 }
 
@@ -97,12 +114,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AsdfRoute: typeof AsdfRoute
+  UrlParserRoute: typeof UrlParserRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AsdfRoute: AsdfRoute,
+  UrlParserRoute: UrlParserRoute,
 }
 
 export const routeTree = rootRoute
@@ -117,7 +136,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
-        "/asdf"
+        "/asdf",
+        "/url-parser"
       ]
     },
     "/": {
@@ -128,6 +148,9 @@ export const routeTree = rootRoute
     },
     "/asdf": {
       "filePath": "asdf.tsx"
+    },
+    "/url-parser": {
+      "filePath": "url-parser.tsx"
     }
   }
 }

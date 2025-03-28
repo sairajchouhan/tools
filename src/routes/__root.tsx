@@ -1,10 +1,14 @@
 import { Suspense, lazy } from "react";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { NavBar } from "../components/NavBar";
 
 export const Route = createRootRoute({
   component: () => (
     <>
-      <Outlet />
+      <NavBar />
+      <main className="min-h-screen bg-gray-50">
+        <Outlet />
+      </main>
       <Suspense>
         <TanStackRouterDevtools />
       </Suspense>
