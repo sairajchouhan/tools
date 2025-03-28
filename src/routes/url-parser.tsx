@@ -3,11 +3,17 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { Plus, Trash2, Copy, Check } from "lucide-react";
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import debounce from "lodash.debounce";
 
 // Local storage key
 const URL_STORAGE_KEY = 'url-parser-url';
+
+// Create debounced save function outside component
+const createDebouncedSave = () => 
+  debounce((value: string) => {
+    localStorage.setItem(URL_STORAGE_KEY, value);
+  }, 500);
 
 export const Route = createFileRoute("/url-parser")({
   component: UrlParser,
@@ -21,12 +27,8 @@ function UrlParser() {
     return savedUrl || "https://example.com/path/to/resource?param1=value1&param2=value2";
   });
 
-  // Create a debounced localStorage save function
-  const debouncedSave = useRef(
-    debounce((value: string) => {
-      localStorage.setItem(URL_STORAGE_KEY, value);
-    }, 500)
-  ).current;
+  // Initialize debounced save function
+  const [debouncedSave] = useState(createDebouncedSave);
 
   // Function to update URL with debounced localStorage persistence
   const setUrl = useCallback((newUrl: string) => {
@@ -47,7 +49,9 @@ function UrlParser() {
   // Parse URL
   const { pathSegments, queryParams, urlObj } = useMemo(() => {
     try {
-      const urlObj = new URL(url);
+      // Remove hash-bang (#!) notation if present
+      const cleanedUrl = url.replace(/#!/, '');
+      const urlObj = new URL(cleanedUrl);
       
       // Parse path segments
       const pathSegments = urlObj.pathname
