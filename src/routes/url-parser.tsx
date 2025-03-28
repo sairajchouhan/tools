@@ -25,7 +25,7 @@ function UrlParser() {
         </div>
         
         {/* Results Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
           {/* Path Segments Section */}
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-4">
