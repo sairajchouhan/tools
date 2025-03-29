@@ -191,7 +191,8 @@ function UrlParser() {
     try {
       const savedUrl = localStorage.getItem(URL_STORAGE_KEY) || "https://example.com/path/to/resource";
       const urlObj = new URL(savedUrl);
-      return urlObj.pathname.split("/").filter(segment => segment.length > 0);
+      // Keep all segments including empty ones, but skip the first part (before first slash)
+      return urlObj.pathname.split("/").slice(1);
     } catch {
       return [];
     }
@@ -258,12 +259,12 @@ function UrlParser() {
 
       const urlObj = new URL(urlToUse);
 
-      // Parse path segments
-      const pathSegments = urlObj.pathname
-        .split("/")
-        .filter((segment) => segment.length > 0);
-        
-      // Update local path segments when URL changes
+      // Parse path segments - keep all segments including empty ones
+      const pathParts = urlObj.pathname.split("/");
+      // Skip first empty segment (before first slash)
+      const pathSegments = pathParts.slice(1);
+      
+      // Update local path segments when URL changes, preserving empty segments
       setLocalPathSegments(pathSegments);
 
       // Parse query parameters
@@ -305,34 +306,32 @@ function UrlParser() {
     return urlObj ? pathSegments : customPathSegments;
   }, [urlObj, pathSegments, customPathSegments, localPathSegments]);
 
+  // Helper function to keep local path segments synchronized with the URL
+  const updatePathSegments = useCallback((segments: string[]) => {
+    setLocalPathSegments(segments);
+    
+    // If we have a valid URL, update the URL with the new segments
+    if (urlObj) {
+      const newUrl = new URL(urlObj.toString());
+      newUrl.pathname = "/" + segments.join("/");
+      setUrl(newUrl.toString());
+    } else {
+      // Otherwise just update the custom segments
+      setCustomPathSegments(segments);
+    }
+  }, [urlObj, setUrl]);
+
   // Update URL when path segments change
   const handlePathSegmentChange = useCallback(
     (index: number, newValue: string) => {
-      // Update local path segments for immediate UI feedback
-      setLocalPathSegments(prev => {
-        const newSegments = [...prev];
-        newSegments[index] = newValue;
-        return newSegments;
-      });
+      // Create new segments array with the updated value
+      const newSegments = [...localPathSegments];
+      newSegments[index] = newValue;
       
-      if (!urlObj) {
-        // For invalid URL, update custom segments
-        const newCustomSegments = [...customPathSegments];
-        newCustomSegments[index] = newValue;
-        setCustomPathSegments(newCustomSegments);
-        return;
-      }
-
-      const newPathSegments = [...pathSegments];
-      newPathSegments[index] = newValue;
-
-      const newPathname = "/" + newPathSegments.join("/");
-      const newUrl = new URL(urlObj.toString());
-      newUrl.pathname = newPathname;
-
-      setUrl(newUrl.toString());
+      // Update path segments and URL
+      updatePathSegments(newSegments);
     },
-    [pathSegments, urlObj, setUrl, customPathSegments]
+    [localPathSegments, updatePathSegments]
   );
 
   // Handle when path segments are reordered
@@ -343,27 +342,11 @@ function UrlParser() {
       const oldIndex = parseInt(active.id.toString().split('-')[1]);
       const newIndex = parseInt(over.id.toString().split('-')[1]);
       
-      // Always update local path segments first for immediate UI feedback
-      setLocalPathSegments(prev => arrayMove([...prev], oldIndex, newIndex));
-      
-      if (!urlObj) {
-        // For invalid URL, reorder custom segments
-        setCustomPathSegments(currentSegments => {
-          return arrayMove(currentSegments, oldIndex, newIndex);
-        });
-        return;
-      }
-      
-      // For valid URL, reorder path segments
-      const newPathSegments = arrayMove([...pathSegments], oldIndex, newIndex);
-      const newPathname = "/" + newPathSegments.join("/");
-      
-      const newUrl = new URL(urlObj.toString());
-      newUrl.pathname = newPathname;
-      
-      setUrl(newUrl.toString());
+      // Reorder segments and update URL
+      const newSegments = arrayMove([...localPathSegments], oldIndex, newIndex);
+      updatePathSegments(newSegments);
     }
-  }, [urlObj, pathSegments, setUrl]);
+  }, [localPathSegments, updatePathSegments]);
 
   // Handle when query parameters are reordered
   const handleQueryParamDragEnd = useCallback((event: DragEndEvent) => {
@@ -380,10 +363,9 @@ function UrlParser() {
       const newUrl = new URL(urlObj.toString());
       newUrl.search = "";
       
+      // Add all params back, including empty ones
       newParams.forEach(param => {
-        if (param.key) {
-          newUrl.searchParams.append(param.key, param.value);
-        }
+        newUrl.searchParams.append(param.key || '', param.value || '');
       });
       
       setUrl(newUrl.toString());
@@ -410,11 +392,10 @@ function UrlParser() {
       // Clear all existing params
       newUrl.search = "";
 
-      // Add all params back
+      // Add all params back, including empty ones
       newParams.forEach((param) => {
-        if (param.key) {
-          newUrl.searchParams.append(param.key, param.value);
-        }
+        // Always append parameters even if key is empty
+        newUrl.searchParams.append(param.key || '', param.value || '');
       });
 
       setUrl(newUrl.toString());
@@ -424,32 +405,12 @@ function UrlParser() {
 
   // Add a new path segment
   const handleAddPathSegment = useCallback(() => {
-    // Always add to local segments first for immediate UI feedback
-    setLocalPathSegments(prev => [...prev, ""]);
+    // Add an empty segment to local path segments
+    const newSegments = [...localPathSegments, ""];
+    updatePathSegments(newSegments);
     
-    // If URL is invalid, add to custom segments
-    if (!urlObj) {
-      console.log("Adding segment to custom segments:", [...customPathSegments, ""]);
-      setCustomPathSegments(prev => [...prev, ""]);
-      return;
-    }
-    
-    try {
-      const newPathSegments = [...pathSegments, ""];
-      const newPathname = "/" + newPathSegments.join("/");
-      
-      console.log("Adding path segment:", newPathname);
-      
-      const newUrl = new URL(urlObj.toString());
-      newUrl.pathname = newPathname;
-      
-      setUrl(newUrl.toString());
-    } catch (error) {
-      console.error("Error adding path segment:", error);
-      // Fallback to a basic URL if there's an error
-      setUrl("https://example.com");
-    }
-  }, [urlObj, pathSegments, setCustomPathSegments, customPathSegments, setUrl]);
+    console.log("Added new path segment, new segments:", newSegments);
+  }, [localPathSegments, updatePathSegments]);
 
   // Add a new query parameter
   const handleAddQueryParam = useCallback(() => {
@@ -468,31 +429,14 @@ function UrlParser() {
   // Remove a path segment
   const handleRemovePathSegment = useCallback(
     (index: number) => {
-      // Always update local path segments first for immediate UI feedback
-      setLocalPathSegments(prev => {
-        const newSegments = [...prev];
-        newSegments.splice(index, 1);
-        return newSegments;
-      });
+      // Create new segments array without the removed segment
+      const newSegments = [...localPathSegments];
+      newSegments.splice(index, 1);
       
-      if (!urlObj) {
-        // For invalid URL, remove from custom segments
-        const newCustomSegments = [...customPathSegments];
-        newCustomSegments.splice(index, 1);
-        setCustomPathSegments(newCustomSegments);
-        return;
-      }
-      
-      const newPathSegments = [...pathSegments];
-      newPathSegments.splice(index, 1);
-      
-      const newPathname = "/" + newPathSegments.join("/");
-      const newUrl = new URL(urlObj.toString());
-      newUrl.pathname = newPathname;
-      
-      setUrl(newUrl.toString());
+      // Update path segments and URL
+      updatePathSegments(newSegments);
     },
-    [pathSegments, urlObj, setUrl, customPathSegments]
+    [localPathSegments, updatePathSegments]
   );
 
   // Remove a query parameter
@@ -506,10 +450,9 @@ function UrlParser() {
       const newUrl = new URL(urlObj.toString());
       newUrl.search = "";
 
+      // Add all params back, including empty ones
       newParams.forEach((param) => {
-        if (param.key) {
-          newUrl.searchParams.append(param.key, param.value);
-        }
+        newUrl.searchParams.append(param.key || '', param.value || '');
       });
 
       setUrl(newUrl.toString());
