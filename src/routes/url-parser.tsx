@@ -185,6 +185,17 @@ function UrlParser() {
       "https://example.com/path/to/resource?param1=value1&param2=value2"
     );
   });
+  
+  // Initialize local path segments from the initial URL if possible
+  const [localPathSegments, setLocalPathSegments] = useState<string[]>(() => {
+    try {
+      const savedUrl = localStorage.getItem(URL_STORAGE_KEY) || "https://example.com/path/to/resource";
+      const urlObj = new URL(savedUrl);
+      return urlObj.pathname.split("/").filter(segment => segment.length > 0);
+    } catch {
+      return [];
+    }
+  });
 
   // Initialize debounced save function
   const [debouncedSave] = useState(createDebouncedSave);
@@ -229,12 +240,31 @@ function UrlParser() {
   // Parse URL
   const { pathSegments, queryParams, urlObj } = useMemo(() => {
     try {
-      const urlObj = new URL(url);
+      // Handle empty or very short URLs by providing a default
+      if (!url || url.trim().length < 3) {
+        console.log("URL is empty or too short, using default");
+        return {
+          pathSegments: [],
+          queryParams: [],
+          urlObj: null
+        };
+      }
+      
+      // If URL doesn't start with http:// or https://, add https://
+      let urlToUse = url;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        urlToUse = 'https://' + url;
+      }
+
+      const urlObj = new URL(urlToUse);
 
       // Parse path segments
       const pathSegments = urlObj.pathname
         .split("/")
         .filter((segment) => segment.length > 0);
+        
+      // Update local path segments when URL changes
+      setLocalPathSegments(pathSegments);
 
       // Parse query parameters
       const queryParams = Array.from(urlObj.searchParams.entries()).map(
@@ -242,10 +272,13 @@ function UrlParser() {
       );
 
       // Reset custom segments when we have a valid URL
-      setCustomPathSegments([]);
+      if (customPathSegments.length > 0) {
+        setCustomPathSegments([]);
+      }
 
       return { pathSegments, queryParams, urlObj };
-    } catch {
+    } catch (error) {
+      console.error("Error parsing URL:", error, url);
       // Return empty values if URL is invalid
       return {
         pathSegments: [],
@@ -253,11 +286,35 @@ function UrlParser() {
         urlObj: null,
       };
     }
-  }, [url]);
+  }, [url, customPathSegments]);
+
+  // Display path segments from URL or custom segments if URL is invalid
+  const displayPathSegments = useMemo(() => {
+    // Log for debugging
+    console.log("URL object:", urlObj);
+    console.log("Path segments:", pathSegments);
+    console.log("Custom path segments:", customPathSegments);
+    console.log("Local path segments:", localPathSegments);
+    
+    // Prioritize local segments first for immediate feedback
+    if (localPathSegments.length > 0) {
+      return localPathSegments;
+    }
+    
+    // Use custom segments if URL is invalid, otherwise use parsed segments
+    return urlObj ? pathSegments : customPathSegments;
+  }, [urlObj, pathSegments, customPathSegments, localPathSegments]);
 
   // Update URL when path segments change
   const handlePathSegmentChange = useCallback(
     (index: number, newValue: string) => {
+      // Update local path segments for immediate UI feedback
+      setLocalPathSegments(prev => {
+        const newSegments = [...prev];
+        newSegments[index] = newValue;
+        return newSegments;
+      });
+      
       if (!urlObj) {
         // For invalid URL, update custom segments
         const newCustomSegments = [...customPathSegments];
@@ -283,21 +340,21 @@ function UrlParser() {
     const { active, over } = event;
     
     if (over && active.id !== over.id) {
+      const oldIndex = parseInt(active.id.toString().split('-')[1]);
+      const newIndex = parseInt(over.id.toString().split('-')[1]);
+      
+      // Always update local path segments first for immediate UI feedback
+      setLocalPathSegments(prev => arrayMove([...prev], oldIndex, newIndex));
+      
       if (!urlObj) {
         // For invalid URL, reorder custom segments
         setCustomPathSegments(currentSegments => {
-          const oldIndex = parseInt(active.id.toString().split('-')[1]);
-          const newIndex = parseInt(over.id.toString().split('-')[1]);
-          
           return arrayMove(currentSegments, oldIndex, newIndex);
         });
         return;
       }
       
       // For valid URL, reorder path segments
-      const oldIndex = parseInt(active.id.toString().split('-')[1]);
-      const newIndex = parseInt(over.id.toString().split('-')[1]);
-      
       const newPathSegments = arrayMove([...pathSegments], oldIndex, newIndex);
       const newPathname = "/" + newPathSegments.join("/");
       
@@ -367,20 +424,32 @@ function UrlParser() {
 
   // Add a new path segment
   const handleAddPathSegment = useCallback(() => {
+    // Always add to local segments first for immediate UI feedback
+    setLocalPathSegments(prev => [...prev, ""]);
+    
     // If URL is invalid, add to custom segments
     if (!urlObj) {
-      setCustomPathSegments([...customPathSegments, ""]);
+      console.log("Adding segment to custom segments:", [...customPathSegments, ""]);
+      setCustomPathSegments(prev => [...prev, ""]);
       return;
     }
     
-    const newPathSegments = [...pathSegments, ""];
-    const newPathname = "/" + newPathSegments.join("/");
-    
-    const newUrl = new URL(urlObj.toString());
-    newUrl.pathname = newPathname;
-    
-    setUrl(newUrl.toString());
-  }, [pathSegments, urlObj, setUrl, customPathSegments]);
+    try {
+      const newPathSegments = [...pathSegments, ""];
+      const newPathname = "/" + newPathSegments.join("/");
+      
+      console.log("Adding path segment:", newPathname);
+      
+      const newUrl = new URL(urlObj.toString());
+      newUrl.pathname = newPathname;
+      
+      setUrl(newUrl.toString());
+    } catch (error) {
+      console.error("Error adding path segment:", error);
+      // Fallback to a basic URL if there's an error
+      setUrl("https://example.com");
+    }
+  }, [urlObj, pathSegments, setCustomPathSegments, customPathSegments, setUrl]);
 
   // Add a new query parameter
   const handleAddQueryParam = useCallback(() => {
@@ -399,6 +468,13 @@ function UrlParser() {
   // Remove a path segment
   const handleRemovePathSegment = useCallback(
     (index: number) => {
+      // Always update local path segments first for immediate UI feedback
+      setLocalPathSegments(prev => {
+        const newSegments = [...prev];
+        newSegments.splice(index, 1);
+        return newSegments;
+      });
+      
       if (!urlObj) {
         // For invalid URL, remove from custom segments
         const newCustomSegments = [...customPathSegments];
@@ -448,11 +524,8 @@ function UrlParser() {
     });
   };
 
-  // Display path segments from URL or custom segments if URL is invalid
-  const displayPathSegments = urlObj ? pathSegments : customPathSegments;
-  
   // Create sortable item IDs for path segments
-  const pathSegmentsIds = displayPathSegments.map((_, index) => `path-${index}`);
+  const pathSegmentsIds = localPathSegments.map((_, index) => `path-${index}`);
   
   // Create sortable item IDs for query params
   const queryParamsIds = queryParams.map((_, index) => `param-${index}`);
@@ -467,7 +540,7 @@ function UrlParser() {
             <Textarea 
               id="url-input"
               placeholder="https://example.com/path/to/resource?param1=value1&param2=value2"
-              className="font-mono resize-none min-h-[70px] text-sm"
+              className={`font-mono resize-none min-h-[70px] text-sm ${urlObj ? '' : 'border-yellow-500 focus-visible:ring-yellow-500'}`}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
@@ -501,40 +574,54 @@ function UrlParser() {
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-base font-semibold">Path Segments</h2>
               <div className="flex items-center">
-                <Button variant="outline" size="sm" onClick={handleAddPathSegment} className="h-7 text-xs">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    console.log("Add Segment button clicked");
+                    handleAddPathSegment();
+                  }} 
+                  className="h-7 text-xs"
+                >
                   <Plus className="h-3 w-3 mr-1" />
                   Add Segment
                 </Button>
               </div>
             </div>
             <div className="space-y-1">
-              {displayPathSegments.length > 0 ? (
-                <DndContext 
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handlePathSegmentDragEnd}
-                  measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
-                >
-                  <SortableContext 
-                    items={pathSegmentsIds}
-                    strategy={verticalListSortingStrategy}
+              {(() => {
+                console.log("Rendering path segments section. Count:", displayPathSegments.length);
+                return localPathSegments.length > 0 ? (
+                  <DndContext 
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handlePathSegmentDragEnd}
+                    measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
                   >
-                    {displayPathSegments.map((segment, index) => (
-                      <SortablePathSegment
-                        key={pathSegmentsIds[index]}
-                        segment={segment}
-                        index={index}
-                        onChange={handlePathSegmentChange}
-                        onRemove={handleRemovePathSegment}
-                      />
-                    ))}
-                  </SortableContext>
-                </DndContext>
-              ) : (
-                <div className="text-center py-3 text-muted-foreground">
-                  No path segments found. Click "Add Segment" to add one.
-                </div>
-              )}
+                    <SortableContext 
+                      items={pathSegmentsIds}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {localPathSegments.map((segment, index) => {
+                        console.log("Rendering segment at index:", index, segment);
+                        return (
+                          <SortablePathSegment
+                            key={`path-${index}`}
+                            segment={segment}
+                            index={index}
+                            onChange={handlePathSegmentChange}
+                            onRemove={handleRemovePathSegment}
+                          />
+                        );
+                      })}
+                    </SortableContext>
+                  </DndContext>
+                ) : (
+                  <div className="text-center py-3 text-muted-foreground">
+                    No path segments found. Click "Add Segment" to add one.
+                  </div>
+                );
+              })()}
             </div>
           </div>
           
