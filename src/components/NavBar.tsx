@@ -7,7 +7,7 @@ export function NavBar() {
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link to="/" className="text-lg font-semibold">
-              DevTools
+              Daily Dev Tools
             </Link>
             <div className="hidden md:flex space-x-4">
               <Link 
