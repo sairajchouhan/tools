@@ -36,6 +36,19 @@ function Index() {
             <h2 className="text-xl font-semibold mb-2">JSON Diff</h2>
             <p className="text-gray-600 text-sm text-center">Compare and visualize differences between JSON objects</p>
           </Link>
+
+          <Link
+            to="/json-formatter"
+            className="flex flex-col items-center p-6 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="mb-4 p-4 bg-purple-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2">JSON Formatter</h2>
+            <p className="text-gray-600 text-sm text-center">Format, validate and pretty-print your JSON data</p>
+          </Link>
         </div>
       </div>
     </div>

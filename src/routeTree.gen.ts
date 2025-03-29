@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as UrlParserImport } from './routes/url-parser'
+import { Route as JsonFormatterImport } from './routes/json-formatter'
 import { Route as JsonDiffImport } from './routes/json-diff'
 import { Route as AsdfImport } from './routes/asdf'
 import { Route as AboutImport } from './routes/about'
@@ -22,6 +23,12 @@ import { Route as IndexImport } from './routes/index'
 const UrlParserRoute = UrlParserImport.update({
   id: '/url-parser',
   path: '/url-parser',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const JsonFormatterRoute = JsonFormatterImport.update({
+  id: '/json-formatter',
+  path: '/json-formatter',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,6 +88,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JsonDiffImport
       parentRoute: typeof rootRoute
     }
+    '/json-formatter': {
+      id: '/json-formatter'
+      path: '/json-formatter'
+      fullPath: '/json-formatter'
+      preLoaderRoute: typeof JsonFormatterImport
+      parentRoute: typeof rootRoute
+    }
     '/url-parser': {
       id: '/url-parser'
       path: '/url-parser'
@@ -98,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
   '/json-diff': typeof JsonDiffRoute
+  '/json-formatter': typeof JsonFormatterRoute
   '/url-parser': typeof UrlParserRoute
 }
 
@@ -106,6 +121,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
   '/json-diff': typeof JsonDiffRoute
+  '/json-formatter': typeof JsonFormatterRoute
   '/url-parser': typeof UrlParserRoute
 }
 
@@ -115,15 +131,35 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
   '/json-diff': typeof JsonDiffRoute
+  '/json-formatter': typeof JsonFormatterRoute
   '/url-parser': typeof UrlParserRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/asdf' | '/json-diff' | '/url-parser'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/asdf'
+    | '/json-diff'
+    | '/json-formatter'
+    | '/url-parser'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/asdf' | '/json-diff' | '/url-parser'
-  id: '__root__' | '/' | '/about' | '/asdf' | '/json-diff' | '/url-parser'
+  to:
+    | '/'
+    | '/about'
+    | '/asdf'
+    | '/json-diff'
+    | '/json-formatter'
+    | '/url-parser'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/asdf'
+    | '/json-diff'
+    | '/json-formatter'
+    | '/url-parser'
   fileRoutesById: FileRoutesById
 }
 
@@ -132,6 +168,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AsdfRoute: typeof AsdfRoute
   JsonDiffRoute: typeof JsonDiffRoute
+  JsonFormatterRoute: typeof JsonFormatterRoute
   UrlParserRoute: typeof UrlParserRoute
 }
 
@@ -140,6 +177,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AsdfRoute: AsdfRoute,
   JsonDiffRoute: JsonDiffRoute,
+  JsonFormatterRoute: JsonFormatterRoute,
   UrlParserRoute: UrlParserRoute,
 }
 
@@ -157,6 +195,7 @@ export const routeTree = rootRoute
         "/about",
         "/asdf",
         "/json-diff",
+        "/json-formatter",
         "/url-parser"
       ]
     },
@@ -171,6 +210,9 @@ export const routeTree = rootRoute
     },
     "/json-diff": {
       "filePath": "json-diff.tsx"
+    },
+    "/json-formatter": {
+      "filePath": "json-formatter.tsx"
     },
     "/url-parser": {
       "filePath": "url-parser.tsx"
