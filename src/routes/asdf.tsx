@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/asdf')({
@@ -5,5 +6,17 @@ export const Route = createFileRoute('/asdf')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/asdf"!</div>
+  return (
+    <div>
+      <Button onClick={async () => {
+        const res = await fetch('http://localhost:11434', {
+          method: 'GET',
+        })
+        const data = await res.json()
+        console.log(data)
+      }}>
+        Fetch Data
+      </Button>
+    </div>
+  )
 }
