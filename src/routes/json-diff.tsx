@@ -30,21 +30,6 @@ function JsonDiff() {
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const [isLeftScrolling, setIsLeftScrolling] = useState(false);
   const [isRightScrolling, setIsRightScrolling] = useState(false);
-  const [copiedLeft, setCopiedLeft] = useState(false);
-  const [copiedRight, setCopiedRight] = useState(false);
-
-  // Copy to clipboard
-  const copyToClipboard = (text: string, side: "left" | "right") => {
-    navigator.clipboard.writeText(text).then(() => {
-      if (side === "left") {
-        setCopiedLeft(true);
-        setTimeout(() => setCopiedLeft(false), 2000);
-      } else {
-        setCopiedRight(true);
-        setTimeout(() => setCopiedRight(false), 2000);
-      }
-    });
-  };
 
   // Load sample data for demonstration
   const loadSampleData = () => {
