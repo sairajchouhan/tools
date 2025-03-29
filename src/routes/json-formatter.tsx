@@ -110,14 +110,14 @@ function JsonFormatter() {
           )}
           
           {isValid === false && (
-            <div className="border rounded-md p-4 bg-red-50 h-[500px] overflow-auto">
+            <div className="border rounded-md p-4 bg-red-50 h-[700px] overflow-auto">
               <p className="text-red-600 font-medium mb-2">Error</p>
               <p className="text-red-500">{error}</p>
             </div>
           )}
           
           {isValid === null && (
-            <div className="border rounded-md p-4 bg-gray-50 h-[500px] flex items-center justify-center">
+            <div className="border rounded-md p-4 bg-gray-50 h-[700px] flex items-center justify-center">
               <p className="text-gray-500">Enter JSON in the input field to see the formatted result</p>
             </div>
           )}
