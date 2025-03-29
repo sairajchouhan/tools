@@ -306,7 +306,7 @@ function UrlParser() {
       
       setUrl(newUrl.toString());
     }
-  }, [urlObj, pathSegments, setUrl, customPathSegments]);
+  }, [urlObj, pathSegments, setUrl]);
 
   // Handle when query parameters are reordered
   const handleQueryParamDragEnd = useCallback((event: DragEndEvent) => {
