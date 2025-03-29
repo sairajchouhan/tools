@@ -569,7 +569,7 @@ function JsonDiff() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-[auto_1fr] text-sm mt-2">
+              <div className="grid grid-cols-[auto_1fr] text-sm">
                 <div className="pr-1 text-right text-gray-400 select-none border-r border-gray-200 mr-2 sticky left-0 bg-white z-10 shadow-sm">
                   {diffOutput.right &&
                     typeof diffOutput.right === "object" &&
