@@ -329,11 +329,6 @@ function JsonDiff() {
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
-      <h1 className="text-2xl font-medium mb-3 text-gray-800">JSON Diff</h1>
-      <p className="mb-6 text-gray-500 text-sm">
-        Compare and visualize differences between JSON objects
-      </p>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="relative">
           <div className="absolute -top-3 left-4 bg-white px-2 text-xs font-medium text-gray-500 z-10">
