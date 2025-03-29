@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
+import { getChatUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/asdf")({
   component: RouteComponent,
@@ -7,7 +8,7 @@ export const Route = createFileRoute("/asdf")({
 
 function RouteComponent() {
   const { messages, input, handleInputChange, handleSubmit } = useChat({
-    api: "http://localhost:3000/api/chat",
+    api: getChatUrl(),
   });
 
   return (
