@@ -67,19 +67,19 @@ function SortablePathSegment({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center bg-white p-2 rounded-md border border-transparent hover:border-gray-200">
+    <div ref={setNodeRef} style={style} className="flex items-center bg-white py-1 px-2 rounded-md mb-1">
       <button 
-        className="touch-manipulation p-2 cursor-grab opacity-50 hover:opacity-100" 
+        className="touch-manipulation p-1 cursor-grab opacity-50 hover:opacity-100" 
         {...attributes} 
         {...listeners}
       >
         <GripVertical className="h-4 w-4" />
       </button>
-      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-medium mr-3">
+      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-50 text-blue-600 font-medium ml-1 mr-1.5 text-xs">
         {index + 1}
       </span>
       <Input 
-        className="font-mono" 
+        className="font-mono text-sm h-8" 
         placeholder="path segment" 
         value={segment}
         onChange={(e) => onChange(index, e.target.value)}
@@ -87,10 +87,10 @@ function SortablePathSegment({
       <Button 
         variant="ghost" 
         size="icon" 
-        className="ml-2"
+        className="ml-1 h-6 w-6"
         onClick={() => onRemove(index)}
       >
-        <Trash2 className="h-4 w-4 text-muted-foreground" />
+        <Trash2 className="h-3 w-3 text-muted-foreground" />
       </Button>
     </div>
   );
@@ -129,19 +129,19 @@ function SortableQueryParam({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="bg-white p-2 rounded-md border border-transparent hover:border-gray-200">
+    <div ref={setNodeRef} style={style} className="bg-white py-1 px-2 rounded-md mb-1">
       <div className="flex items-center">
         <button 
-          className="touch-manipulation p-2 cursor-grab opacity-50 hover:opacity-100" 
+          className="touch-manipulation p-1 cursor-grab opacity-50 hover:opacity-100" 
           {...attributes} 
           {...listeners}
         >
           <GripVertical className="h-4 w-4" />
         </button>
-        <div className="flex-1 grid grid-cols-3 gap-3">
+        <div className="flex-1 grid grid-cols-3 gap-2 mx-2">
           <div className="col-span-1">
             <Input 
-              className="font-mono bg-gray-50" 
+              className="font-mono bg-gray-50 text-sm h-8" 
               placeholder="Key" 
               value={param.key}
               onChange={(e) => onChange(index, 'key', e.target.value)}
@@ -149,7 +149,7 @@ function SortableQueryParam({
           </div>
           <div className="col-span-2">
             <Input 
-              className="font-mono" 
+              className="font-mono text-sm h-8" 
               placeholder="Value" 
               value={param.value}
               onChange={(e) => onChange(index, 'value', e.target.value)}
@@ -159,10 +159,10 @@ function SortableQueryParam({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="ml-2"
+          className="ml-1 h-6 w-6"
           onClick={() => onRemove(index)}
         >
-          <Trash2 className="h-4 w-4 text-muted-foreground" />
+          <Trash2 className="h-3 w-3 text-muted-foreground" />
         </Button>
       </div>
     </div>
@@ -458,36 +458,34 @@ function UrlParser() {
   const queryParamsIds = queryParams.map((_, index) => `param-${index}`);
 
   return (
-    <div className="container mx-auto py-8 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">URL Parser</h1>
-      
-      <div className="space-y-8">
+    <div className="container mx-auto py-4 px-4 max-w-3xl">
+      <div className="space-y-3">
         {/* URL Input */}
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <Label htmlFor="url-input" className="text-base font-medium block mb-2">Enter URL</Label>
-          <div className="flex flex-col space-y-2">
+        <div className="bg-white p-3 rounded-lg shadow-sm">
+          <Label htmlFor="url-input" className="text-sm font-medium block mb-1">Enter URL</Label>
+          <div className="flex flex-col space-y-1">
             <Textarea 
               id="url-input"
               placeholder="https://example.com/path/to/resource?param1=value1&param2=value2"
-              className="font-mono resize-none min-h-[100px]"
+              className="font-mono resize-none min-h-[70px] text-sm"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
-            <div className="self-end">
+            <div className="self-end mt-2">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleCopyUrl}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 h-7 text-xs"
               >
                 {copied ? (
                   <>
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-3 w-3 text-green-500" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-3 w-3" />
                     Copy URL
                   </>
                 )}
@@ -497,19 +495,19 @@ function UrlParser() {
         </div>
         
         {/* Results Section */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Path Segments Section */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Path Segments</h2>
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-semibold">Path Segments</h2>
               <div className="flex items-center">
-                <Button variant="outline" size="sm" onClick={handleAddPathSegment}>
-                  <Plus className="h-4 w-4 mr-1" />
+                <Button variant="outline" size="sm" onClick={handleAddPathSegment} className="h-7 text-xs">
+                  <Plus className="h-3 w-3 mr-1" />
                   Add Segment
                 </Button>
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {displayPathSegments.length > 0 ? (
                 <DndContext 
                   sensors={sensors}
@@ -533,7 +531,7 @@ function UrlParser() {
                   </SortableContext>
                 </DndContext>
               ) : (
-                <div className="text-center py-4 text-muted-foreground">
+                <div className="text-center py-3 text-muted-foreground">
                   No path segments found. Click "Add Segment" to add one.
                 </div>
               )}
@@ -541,15 +539,15 @@ function UrlParser() {
           </div>
           
           {/* Query Parameters Section */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Query Parameters</h2>
-              <Button variant="outline" size="sm" onClick={handleAddQueryParam}>
-                <Plus className="h-4 w-4 mr-1" />
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-semibold">Query Parameters</h2>
+              <Button variant="outline" size="sm" onClick={handleAddQueryParam} className="h-7 text-xs">
+                <Plus className="h-3 w-3 mr-1" />
                 Add Parameter
               </Button>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-1">
               {queryParams.length > 0 ? (
                 <DndContext 
                   sensors={sensors}
@@ -573,7 +571,7 @@ function UrlParser() {
                   </SortableContext>
                 </DndContext>
               ) : (
-                <div className="text-center py-4 text-muted-foreground">
+                <div className="text-center py-3 text-muted-foreground">
                   No query parameters found. Click "Add Parameter" to add one.
                 </div>
               )}
