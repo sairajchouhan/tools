@@ -1,22 +1,35 @@
-import { Button } from '@/components/ui/button'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { useChat } from "@ai-sdk/react";
+import { getChatUrl } from "@/lib/utils";
 
-export const Route = createFileRoute('/asdf')({
+export const Route = createFileRoute("/asdf")({
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: getChatUrl(),
+  });
+
   return (
     <div>
-      <Button onClick={async () => {
-        const res = await fetch('http://localhost:11434', {
-          method: 'GET',
-        })
-        const data = await res.json()
-        console.log(data)
-      }}>
-        Fetch Data
-      </Button>
+      <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+        {messages.map((m) => (
+          <div key={m.id} className="whitespace-pre-wrap">
+            {m.role === "user" ? "User: " : "AI: "}
+            {m.content}
+          </div>
+        ))}
+
+        <form onSubmit={handleSubmit}>
+          <input
+            className="fixed dark:bg-zinc-900 bottom-0 w-full max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
+            value={input}
+            placeholder="Say something..."
+            onChange={handleInputChange}
+          />
+        </form>
+      </div>
     </div>
-  )
+  );
 }
