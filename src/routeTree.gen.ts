@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as UrlParserImport } from './routes/url-parser'
+import { Route as JsonDiffImport } from './routes/json-diff'
 import { Route as AsdfImport } from './routes/asdf'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
@@ -21,6 +22,12 @@ import { Route as IndexImport } from './routes/index'
 const UrlParserRoute = UrlParserImport.update({
   id: '/url-parser',
   path: '/url-parser',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const JsonDiffRoute = JsonDiffImport.update({
+  id: '/json-diff',
+  path: '/json-diff',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -67,6 +74,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AsdfImport
       parentRoute: typeof rootRoute
     }
+    '/json-diff': {
+      id: '/json-diff'
+      path: '/json-diff'
+      fullPath: '/json-diff'
+      preLoaderRoute: typeof JsonDiffImport
+      parentRoute: typeof rootRoute
+    }
     '/url-parser': {
       id: '/url-parser'
       path: '/url-parser'
@@ -83,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
+  '/json-diff': typeof JsonDiffRoute
   '/url-parser': typeof UrlParserRoute
 }
 
@@ -90,6 +105,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
+  '/json-diff': typeof JsonDiffRoute
   '/url-parser': typeof UrlParserRoute
 }
 
@@ -98,15 +114,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/asdf': typeof AsdfRoute
+  '/json-diff': typeof JsonDiffRoute
   '/url-parser': typeof UrlParserRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/asdf' | '/url-parser'
+  fullPaths: '/' | '/about' | '/asdf' | '/json-diff' | '/url-parser'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/asdf' | '/url-parser'
-  id: '__root__' | '/' | '/about' | '/asdf' | '/url-parser'
+  to: '/' | '/about' | '/asdf' | '/json-diff' | '/url-parser'
+  id: '__root__' | '/' | '/about' | '/asdf' | '/json-diff' | '/url-parser'
   fileRoutesById: FileRoutesById
 }
 
@@ -114,6 +131,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AsdfRoute: typeof AsdfRoute
+  JsonDiffRoute: typeof JsonDiffRoute
   UrlParserRoute: typeof UrlParserRoute
 }
 
@@ -121,6 +139,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AsdfRoute: AsdfRoute,
+  JsonDiffRoute: JsonDiffRoute,
   UrlParserRoute: UrlParserRoute,
 }
 
@@ -137,6 +156,7 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/asdf",
+        "/json-diff",
         "/url-parser"
       ]
     },
@@ -148,6 +168,9 @@ export const routeTree = rootRoute
     },
     "/asdf": {
       "filePath": "asdf.tsx"
+    },
+    "/json-diff": {
+      "filePath": "json-diff.tsx"
     },
     "/url-parser": {
       "filePath": "url-parser.tsx"

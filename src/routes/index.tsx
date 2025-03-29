@@ -23,6 +23,19 @@ function Index() {
             <h2 className="text-xl font-semibold mb-2">URL Parser</h2>
             <p className="text-gray-600 text-sm text-center">Parse and visualize URL path segments and query parameters</p>
           </Link>
+          
+          <Link
+            to="/json-diff"
+            className="flex flex-col items-center p-6 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="mb-4 p-4 bg-green-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7zm9 4h6m0 0v6m0-6l-6 6m-3-3H4m0 0V8m0 6l6-6" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2">JSON Diff</h2>
+            <p className="text-gray-600 text-sm text-center">Compare and visualize differences between JSON objects</p>
+          </Link>
         </div>
       </div>
     </div>

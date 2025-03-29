@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- use bun to install any package and use bunx to temporarily run any script from a package
+- to add shadcn component use latest shadcn package not shadcn-ui package
+- do not ever suggest to start the development server because most of the times I have a developmet server running anytime so don't ever do that
