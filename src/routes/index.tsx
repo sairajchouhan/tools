@@ -1,279 +1,42 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Check, Copy, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({ component: Index });
 
-type QueryParam = { key: string; value: string };
-type PathSegment = { id: string; value: string };
-
 function Index() {
-  const [copied, setCopied] = useState(false);
-  const [url, setUrl] = useState(() => {
-    const savedUrl = localStorage.getItem("url");
-    return savedUrl || "";
-  });
-  const [parsedUrl, setParsedUrl] = useState<{
-    protocol: string;
-    hostname: string;
-    pathSegments: PathSegment[];
-    queryParams: QueryParam[];
-    hash: string;
-  }>({
-    protocol: "",
-    hostname: "",
-    pathSegments: [],
-    queryParams: [],
-    hash: "",
-  });
-  console.log(parsedUrl)
-  
-
-  useEffect(() => {
-    if (url) {
-      localStorage.setItem("url", url);
-      try {
-        // Remove hashbang pattern if present
-        const cleanUrl = url.replace("/#!", "/");
-        const urlObj = new URL(cleanUrl);
-
-        // Only update path segments if they don't exist or if URL was manually changed
-        setParsedUrl(prev => {
-          // If we have existing path segments and URL wasn't manually changed, keep them
-          const shouldKeepExistingSegments = prev.pathSegments.length > 0 && 
-            prev.hostname === (urlObj.port ? `${urlObj.hostname}:${urlObj.port}` : urlObj.hostname) && 
-            prev.protocol === urlObj.protocol.replace(":", "");
-
-          const newPathSegments = shouldKeepExistingSegments
-            ? prev.pathSegments
-            : urlObj.pathname
-                .split("/")
-                .filter(Boolean)
-                .map((segment, index) => ({
-                  id: `segment-${Date.now()}-${index}`,
-                  value: segment
-                }));
-
-          // Parse query parameters
-          const queryParams: QueryParam[] = [];
-          urlObj.searchParams.forEach((value, key) => {
-            queryParams.push({ key, value });
-          });
-
-          return {
-            protocol: urlObj.protocol.replace(":", ""),
-            hostname: urlObj.port ? `${urlObj.hostname}:${urlObj.port}` : urlObj.hostname,
-            pathSegments: newPathSegments,
-            queryParams,
-            hash: urlObj.hash.replace("#", "")
-          };
-        });
-      } catch (err: unknown) {
-        console.error(err);
-        setParsedUrl({
-          protocol: "",
-          hostname: "",
-          pathSegments: [],
-          queryParams: [],
-          hash: "",
-        });
-      }
-    }else {
-      localStorage.removeItem("url")
-      setUrl("")
-      setParsedUrl({
-        protocol: "",
-        hostname: "",
-        pathSegments: [],
-        queryParams: [],
-        hash: "",
-      })
-    }
-  }, [url]);
-
-  useEffect(() => {
-    if (parsedUrl.hostname) {
-      try {
-        const newUrl = new URL(`${parsedUrl.protocol}://${parsedUrl.hostname}`);
-        
-        // Add path segments
-        const pathString = parsedUrl.pathSegments
-          .map(segment => segment.value)
-          .join('/');
-        if (pathString) {
-          newUrl.pathname = `/${pathString}`;
-        }
-
-        // Add query parameters
-        parsedUrl.queryParams.forEach(param => {
-          if (param.key) {
-            newUrl.searchParams.set(param.key, param.value);
-          }
-        });
-
-        // Add hash
-        if (parsedUrl.hash) {
-          newUrl.hash = `#${parsedUrl.hash}`;
-        }
-
-        const newUrlString = newUrl.toString();
-        // Only update if there's a meaningful change to avoid infinite loops
-        if (newUrlString !== url && newUrlString.replace(/\/$/, '') !== url.replace(/\/$/, '')) {
-          setUrl(newUrlString);
-        }
-      } catch (err) {
-        console.error('Error reconstructing URL:', err);
-      }
-    }
-  }, [parsedUrl.protocol, parsedUrl.hostname, parsedUrl.pathSegments, parsedUrl.queryParams, parsedUrl.hash]);
-
-  const handleDeletePathSegment = (segmentId: string) => {
-    setParsedUrl({
-      ...parsedUrl,
-      pathSegments: parsedUrl.pathSegments.filter((s) => s.id !== segmentId),
-    });
-  };
-
-  const handleDeleteQueryParam = (index: number) => {
-    setParsedUrl({
-      ...parsedUrl,
-      queryParams: parsedUrl.queryParams.filter((_, i) => i !== index),
-    });
-  };
-
   return (
-    <div className="mx-auto p-4 w-full sm:w-full md:w-3/4 lg:w-3/5">
-      <div className="grid w-full items-center gap-1.5">
-        <Label htmlFor="url">URL</Label>
-        <div className="flex gap-2">
-          <Input
-            type="url"
-            id="url"
-            placeholder="https://example.com"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={async () => {
-              await navigator.clipboard.writeText(url);
-              const button = document.querySelector('[data-copy-button]');
-              if (button) {
-                button.classList.add('scale-90');
-                setTimeout(() => button.classList.remove('scale-90'), 100);
-              }
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1000);
-            }}
-            data-copy-button
+    <div className="container mx-auto py-12 max-w-3xl">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-4">Daily Dev Tools</h1>
+        <p className="text-gray-600 mb-8">Simple utilities to make your development workflow easier</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link
+            to="/url-parser"
+            className="flex flex-col items-center p-6 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow"
           >
-            {copied ? (
-              <Check className="h-4 w-4 text-green-500" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-      </div>
-
-      <div className="mt-4">
-        <Label>Path Segments</Label>
-        <div className="mt-2 space-y-2">
-          {parsedUrl.pathSegments.map((segment) => (
-            <div key={segment.id} className="flex items-center gap-2">
-              <Input
-                type="text"
-                value={segment.value}
-                className="text-sm font-medium"
-                onChange={(e) => {
-                  const newSegments = parsedUrl.pathSegments.map((s) =>
-                    s.id === segment.id ? { ...s, value: e.target.value } : s
-                  );
-                  setParsedUrl({ ...parsedUrl, pathSegments: newSegments });
-                }}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleDeletePathSegment(segment.id)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <div className="mb-4 p-4 bg-blue-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
             </div>
-          ))}
-        </div>
-        <Button
-          variant="outline"
-          className="mt-2 w-full"
-          onClick={() => {
-            setParsedUrl({
-              ...parsedUrl,
-              pathSegments: [
-                ...parsedUrl.pathSegments,
-                { id: `segment-${Date.now()}`, value: "" },
-              ],
-            });
-          }}
-        >
-          Add Path Segment
-        </Button>
-      </div>
-
-      <div className="mt-4">
-        <Label>Query Parameters</Label>
-        <div className="mt-2 space-y-2">
-          {parsedUrl.queryParams.map((param, index) => (
-            <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-              <Input
-                type="text"
-                value={param.key}
-                className="text-sm font-medium"
-                placeholder="Key"
-                onChange={(e) => {
-                  const newParams = parsedUrl.queryParams.map((p, i) =>
-                    i === index ? { ...p, key: e.target.value } : p
-                  );
-                  setParsedUrl({ ...parsedUrl, queryParams: newParams });
-                }}
-              />
-              <Input
-                type="text"
-                value={param.value}
-                className="text-sm font-medium"
-                placeholder="Value"
-                onChange={(e) => {
-                  const newParams = parsedUrl.queryParams.map((p, i) =>
-                    i === index ? { ...p, value: e.target.value } : p
-                  );
-                  setParsedUrl({ ...parsedUrl, queryParams: newParams });
-                }}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleDeleteQueryParam(index)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+            <h2 className="text-xl font-semibold mb-2">URL Parser</h2>
+            <p className="text-gray-600 text-sm text-center">Parse and visualize URL path segments and query parameters</p>
+          </Link>
+          
+          <Link
+            to="/json-diff"
+            className="flex flex-col items-center p-6 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="mb-4 p-4 bg-green-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7zm9 4h6m0 0v6m0-6l-6 6m-3-3H4m0 0V8m0 6l6-6" />
+              </svg>
             </div>
-          ))}
+            <h2 className="text-xl font-semibold mb-2">JSON Diff</h2>
+            <p className="text-gray-600 text-sm text-center">Compare and visualize differences between JSON objects</p>
+          </Link>
         </div>
-        <Button
-          variant="outline"
-          className="mt-2 w-full"
-          onClick={() => {
-            setParsedUrl({
-              ...parsedUrl,
-              queryParams: [...parsedUrl.queryParams, { key: "", value: "" }],
-            });
-          }}
-        >
-          Add Query Parameter
-        </Button>
       </div>
     </div>
   );

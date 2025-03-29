@@ -1,0 +1,82 @@
+/* CSS for jsondiffpatch formatting */
+.jsondiffpatch-delta {
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.jsondiffpatch-delta ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.jsondiffpatch-added .jsondiffpatch-property-name,
+.jsondiffpatch-added .jsondiffpatch-value pre,
+.jsondiffpatch-modified .jsondiffpatch-right-value pre,
+.jsondiffpatch-textdiff-added {
+  background: #e6ffed;
+  color: #24292e;
+}
+
+.jsondiffpatch-deleted .jsondiffpatch-property-name,
+.jsondiffpatch-deleted .jsondiffpatch-value pre,
+.jsondiffpatch-modified .jsondiffpatch-left-value pre,
+.jsondiffpatch-textdiff-deleted {
+  background: #ffdce0;
+  color: #24292e;
+  text-decoration: line-through;
+}
+
+.jsondiffpatch-unchanged,
+.jsondiffpatch-movedestination {
+  color: gray;
+}
+
+.jsondiffpatch-unchanged,
+.jsondiffpatch-movedestination > .jsondiffpatch-value {
+  transition: all 0.5s;
+  -webkit-transition: all 0.5s;
+  overflow-y: hidden;
+}
+
+.jsondiffpatch-unchanged-showing .jsondiffpatch-unchanged,
+.jsondiffpatch-unchanged-showing .jsondiffpatch-movedestination > .jsondiffpatch-value {
+  max-height: 100px;
+}
+
+.jsondiffpatch-unchanged-hidden .jsondiffpatch-unchanged,
+.jsondiffpatch-unchanged-hidden .jsondiffpatch-movedestination > .jsondiffpatch-value {
+  max-height: 0;
+}
+
+.jsondiffpatch-unchanged-hiding .jsondiffpatch-movedestination > .jsondiffpatch-value,
+.jsondiffpatch-unchanged-hidden .jsondiffpatch-movedestination > .jsondiffpatch-value {
+  display: block;
+}
+
+.jsondiffpatch-unchanged-visible .jsondiffpatch-unchanged,
+.jsondiffpatch-unchanged-visible .jsondiffpatch-movedestination > .jsondiffpatch-value {
+  max-height: 100px;
+}
+
+.jsondiffpatch-unchanged-hiding .jsondiffpatch-unchanged,
+.jsondiffpatch-unchanged-hiding .jsondiffpatch-movedestination > .jsondiffpatch-value {
+  max-height: 0;
+}
+
+.jsondiffpatch-value {
+  display: inline-block;
+}
+
+ul.jsondiffpatch-textdiff {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.jsondiffpatch-textdiff-location {
+  color: #bbb;
+  display: inline-block;
+  min-width: 60px;
+} 
