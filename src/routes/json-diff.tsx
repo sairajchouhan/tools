@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, ReactNode, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import "../components/JsonDiffStyles.css";
+import { X, Copy, Edit, ArrowLeftRight, RefreshCw, Check, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/json-diff")({
   component: JsonDiff,
@@ -30,6 +31,9 @@ function JsonDiff() {
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const [isLeftScrolling, setIsLeftScrolling] = useState(false);
   const [isRightScrolling, setIsRightScrolling] = useState(false);
+  const [viewMode, setViewMode] = useState<"edit" | "diff">("edit");
+  const [leftCopied, setLeftCopied] = useState(false);
+  const [rightCopied, setRightCopied] = useState(false);
 
   // Load sample data for demonstration
   const loadSampleData = () => {
@@ -120,6 +124,7 @@ function JsonDiff() {
       const rightObj = JSON.parse(rightJson || "{}") as JsonValue;
 
       setDiffOutput({ left: leftObj, right: rightObj });
+      setViewMode("diff");
     } catch (err) {
       setError(
         `Error parsing JSON: ${err instanceof Error ? err.message : String(err)}`
@@ -312,102 +317,183 @@ function JsonDiff() {
     );
   };
 
-  return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="relative">
-          <div className="absolute -top-3 left-4 bg-white px-2 text-xs font-medium text-gray-500 z-10">
-            Source JSON
-          </div>
-          <textarea
-            id="leftJson"
-            className="w-full h-64 p-4 border border-gray-200 rounded-md font-mono shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pt-6"
-            value={leftJson}
-            onChange={(e) => setLeftJson(e.target.value)}
-            placeholder='{"name": "John", "age": 30, "hobbies": ["Reading", "Hiking"]}'
-            onKeyDown={(e) => {
-              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-                e.preventDefault();
-                compareJson();
-              }
-            }}
-          />
-        </div>
-        <div className="relative">
-          <div className="absolute -top-3 left-4 bg-white px-2 text-xs font-medium text-gray-500 z-10">
-            Target JSON
-          </div>
-          <textarea
-            id="rightJson"
-            className="w-full h-64 p-4 border border-gray-200 rounded-md font-mono shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pt-6"
-            value={rightJson}
-            onChange={(e) => setRightJson(e.target.value)}
-            placeholder='{"name": "John", "age": 31, "hobbies": ["Reading", "Coding"]}'
-            onKeyDown={(e) => {
-              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-                e.preventDefault();
-                compareJson();
-              }
-            }}
-          />
-        </div>
-      </div>
+  // Reset all inputs
+  const resetFields = () => {
+    setLeftJson("");
+    setRightJson("");
+    setDiffOutput(null);
+    setError("");
+    setViewMode("edit");
+  };
 
-      <div className="mb-8 flex justify-center items-center space-x-4">
-        <Button
-          onClick={compareJson}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md shadow-sm transition-all"
-        >
-          Compare <span className="ml-2 text-xs opacity-70">(Ctrl+Enter)</span>
-        </Button>
-        <Button
-          onClick={loadSampleData}
-          className="bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-md shadow-sm transition-all border border-gray-200"
-        >
-          Load Example
-        </Button>
-      </div>
+  // Function to handle clipboard copy with visual feedback
+  const handleCopy = async (text: string, side: "left" | "right") => {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (side === "left") {
+        setLeftCopied(true);
+        setTimeout(() => setLeftCopied(false), 2000);
+      } else {
+        setRightCopied(true);
+        setTimeout(() => setRightCopied(false), 2000);
+      }
+    } catch (err) {
+      setError(`Failed to copy to clipboard: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
+
+  return (
+    <div className={`container mx-auto ${viewMode === "diff" ? "p-3" : "p-6"} max-w-6xl`}>
+      {viewMode === "edit" && (
+        <div className="transition-all duration-300 ease-in-out">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="relative">
+              <div className="absolute -top-3 left-4 bg-white px-2 text-xs font-medium text-gray-500 z-10">
+                Source JSON
+              </div>
+              <textarea
+                id="leftJson"
+                className="w-full h-64 p-4 border border-gray-200 rounded-md font-mono shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pt-6"
+                value={leftJson}
+                onChange={(e) => setLeftJson(e.target.value)}
+                placeholder='{"name": "John", "age": 30, "hobbies": ["Reading", "Hiking"]}'
+                onKeyDown={(e) => {
+                  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                    e.preventDefault();
+                    compareJson();
+                  }
+                }}
+              />
+              {leftJson && (
+                <Button
+                  onClick={() => setLeftJson("")}
+                  className="absolute top-2 right-2 p-1 h-7 w-7"
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <div className="relative">
+              <div className="absolute -top-3 left-4 bg-white px-2 text-xs font-medium text-gray-500 z-10">
+                Target JSON
+              </div>
+              <textarea
+                id="rightJson"
+                className="w-full h-64 p-4 border border-gray-200 rounded-md font-mono shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 pt-6"
+                value={rightJson}
+                onChange={(e) => setRightJson(e.target.value)}
+                placeholder='{"name": "John", "age": 31, "hobbies": ["Reading", "Coding"]}'
+                onKeyDown={(e) => {
+                  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                    e.preventDefault();
+                    compareJson();
+                  }
+                }}
+              />
+              {rightJson && (
+                <Button
+                  onClick={() => setRightJson("")}
+                  className="absolute top-2 right-2 p-1 h-7 w-7"
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="mb-8 flex justify-center items-center space-x-4">
+            <Button
+              onClick={compareJson}
+              variant="default"
+              disabled={!leftJson || !rightJson}
+            >
+              <ArrowLeftRight className="h-4 w-4 mr-2" />
+              Compare <span className="ml-2 text-xs opacity-70">(Ctrl+Enter)</span>
+            </Button>
+            {!leftJson && !rightJson && (
+              <Button
+                onClick={loadSampleData}
+                variant="outline"
+              >
+                Load Example
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {viewMode === "diff" && diffOutput && (
+        <div className="transition-all duration-300 ease-in-out">
+          <div className="mb-2 flex justify-between items-center">
+            <div className="text-xs text-gray-400 flex items-center space-x-3">
+              <span className="flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-red-50 mr-1 border border-red-300"></span>
+                Removed
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-50 mr-1 border border-green-300"></span>
+                Added
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-yellow-50 mr-1 border border-yellow-300"></span>
+                Changed
+              </span>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={resetFields}
+                variant="default"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                New Diff
+              </Button>
+              <Button
+                onClick={() => setViewMode("edit")}
+                variant="outline"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit JSON
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 p-3 bg-red-50 text-red-700 rounded-md border border-red-100 text-sm">
           <div className="flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 mr-2 text-red-500"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <AlertCircle className="h-4 w-4 mr-2 text-red-500" />
             {error}
           </div>
         </div>
       )}
 
       {diffOutput && (
-        <div className="mt-6">
-          <div className="text-xs text-gray-400 mb-2 flex items-center space-x-4">
-            <span className="flex items-center">
-              <span className="inline-block w-2 h-2 rounded-full bg-red-50 mr-1 border border-red-300"></span>
-              Removed
-            </span>
-            <span className="flex items-center">
-              <span className="inline-block w-2 h-2 rounded-full bg-green-50 mr-1 border border-green-300"></span>
-              Added
-            </span>
-            <span className="flex items-center">
-              <span className="inline-block w-2 h-2 rounded-full bg-yellow-50 mr-1 border border-yellow-300"></span>
-              Changed
-            </span>
-          </div>
+        <div className={viewMode === "diff" ? "mt-0" : "mt-6"}>
+          {viewMode !== "diff" && (
+            <div className="text-xs text-gray-400 mb-2 flex items-center space-x-4">
+              <span className="flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-red-50 mr-1 border border-red-300"></span>
+                Removed
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-50 mr-1 border border-green-300"></span>
+                Added
+              </span>
+              <span className="flex items-center">
+                <span className="inline-block w-2 h-2 rounded-full bg-yellow-50 mr-1 border border-yellow-300"></span>
+                Changed
+              </span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
-              className="border border-gray-200 rounded-md bg-white overflow-auto font-mono relative h-[500px] shadow-sm"
+              className={`border border-gray-200 rounded-md bg-white overflow-auto font-mono relative ${viewMode === "diff" ? "h-[calc(100vh-150px)]" : "h-[500px]"} shadow-sm`}
               ref={leftPanelRef}
             >
               <div className="sticky top-0 z-20 bg-white ">
@@ -416,6 +502,19 @@ function JsonDiff() {
                     <span className="inline-block w-2 h-2 rounded-full bg-red-400 mr-2"></span>
                     Source
                   </div>
+                  <Button
+                    onClick={() => handleCopy(leftJson, "left")}
+                    variant={leftCopied ? "outline" : "ghost"}
+                    size="sm"
+                    className={leftCopied ? "text-green-600 border-green-200" : ""}
+                  >
+                    {leftCopied ? (
+                      <Check className="h-3 w-3 mr-1" />
+                    ) : (
+                      <Copy className="h-3 w-3 mr-1" />
+                    )}
+                    {leftCopied ? "Copied!" : "Copy"}
+                  </Button>
                 </div>
               </div>
               <div className="grid grid-cols-[auto_1fr] text-sm">
@@ -445,7 +544,7 @@ function JsonDiff() {
               </div>
             </div>
             <div
-              className="border border-gray-200 rounded-md bg-white overflow-auto font-mono relative h-[500px] shadow-sm"
+              className={`border border-gray-200 rounded-md bg-white overflow-auto font-mono relative ${viewMode === "diff" ? "h-[calc(100vh-150px)]" : "h-[500px]"} shadow-sm`}
               ref={rightPanelRef}
             >
               <div className="sticky top-0 z-20 bg-white">
@@ -454,6 +553,19 @@ function JsonDiff() {
                     <span className="inline-block w-2 h-2 rounded-full bg-green-400 mr-2"></span>
                     Target
                   </div>
+                  <Button
+                    onClick={() => handleCopy(rightJson, "right")}
+                    variant={rightCopied ? "outline" : "ghost"}
+                    size="sm"
+                    className={rightCopied ? "text-green-600 border-green-200" : ""}
+                  >
+                    {rightCopied ? (
+                      <Check className="h-3 w-3 mr-1" />
+                    ) : (
+                      <Copy className="h-3 w-3 mr-1" />
+                    )}
+                    {rightCopied ? "Copied!" : "Copy"}
+                  </Button>
                 </div>
               </div>
 
