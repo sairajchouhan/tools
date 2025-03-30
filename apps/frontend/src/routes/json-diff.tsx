@@ -2,7 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, ReactNode, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import "../components/JsonDiffStyles.css";
-import { X, Copy, Edit, ArrowLeftRight, RefreshCw, Check, AlertCircle } from "lucide-react";
+import {
+  X,
+  Copy,
+  Edit,
+  ArrowLeftRight,
+  RefreshCw,
+  Check,
+  AlertCircle,
+  Sparkles,
+} from "lucide-react";
+import { useChat } from "@ai-sdk/react";
+import { getChatUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/json-diff")({
   component: JsonDiff,
@@ -34,6 +45,24 @@ function JsonDiff() {
   const [viewMode, setViewMode] = useState<"edit" | "diff">("edit");
   const [leftCopied, setLeftCopied] = useState(false);
   const [rightCopied, setRightCopied] = useState(false);
+
+  const { messages, handleSubmit, setInput, input, status } = useChat({
+    api: getChatUrl(),
+  });
+
+  console.log("string", {
+    messages,
+    input,
+    status,
+  });
+
+  useEffect(() => {
+    if (leftJson && rightJson) {
+      setInput(
+        `Compare these two JSONs:\n\nJSON 1:\n${leftJson}\n\nJSON 2:\n${rightJson}`
+      );
+    }
+  }, [leftJson, rightJson, setInput]);
 
   // Load sample data for demonstration
   const loadSampleData = () => {
@@ -338,12 +367,16 @@ function JsonDiff() {
         setTimeout(() => setRightCopied(false), 2000);
       }
     } catch (err) {
-      setError(`Failed to copy to clipboard: ${err instanceof Error ? err.message : String(err)}`);
+      setError(
+        `Failed to copy to clipboard: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   };
 
   return (
-    <div className={`container mx-auto ${viewMode === "diff" ? "p-3" : "p-6"} max-w-6xl`}>
+    <div
+      className={`container mx-auto ${viewMode === "diff" ? "p-3" : "p-6"} max-w-6xl`}
+    >
       {viewMode === "edit" && (
         <div className="transition-all duration-300 ease-in-out">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -409,16 +442,14 @@ function JsonDiff() {
             <Button
               onClick={compareJson}
               variant="default"
-              disabled={!leftJson || !rightJson}
+              disabled={!leftJson || !rightJson || status === "streaming"}
             >
               <ArrowLeftRight className="h-4 w-4 mr-2" />
-              Compare <span className="ml-2 text-xs opacity-70">(Ctrl+Enter)</span>
+              Compare{" "}
+              <span className="ml-2 text-xs opacity-70">(Ctrl+Enter)</span>
             </Button>
             {!leftJson && !rightJson && (
-              <Button
-                onClick={loadSampleData}
-                variant="outline"
-              >
+              <Button onClick={loadSampleData} variant="outline">
                 Load Example
               </Button>
             )}
@@ -444,17 +475,22 @@ function JsonDiff() {
               </span>
             </div>
             <div className="flex space-x-2">
-              <Button
-                onClick={resetFields}
-                variant="default"
-              >
+              <form onSubmit={handleSubmit}>
+                <Button
+                  variant="default"
+                  disabled={!leftJson || !rightJson}
+                  type="submit"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Summarize
+                </Button>
+              </form>
+              <Button onClick={resetFields} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 New Diff
               </Button>
-              <Button
-                onClick={() => setViewMode("edit")}
-                variant="outline"
-              >
+
+              <Button onClick={() => setViewMode("edit")} variant="outline">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit JSON
               </Button>
@@ -469,6 +505,21 @@ function JsonDiff() {
             <AlertCircle className="h-4 w-4 mr-2 text-red-500" />
             {error}
           </div>
+        </div>
+      )}
+
+      {messages.length > 0 && (
+        <div className="mb-6 p-4 bg-white rounded-md border border-gray-200 shadow-sm prose prose-sm max-w-none">
+          {messages.map((message) => (
+            <div key={message.id} className="mb-4">
+              {message.role === "assistant" && (
+                <div
+                  className="markdown-content"
+                  dangerouslySetInnerHTML={{ __html: message.content }}
+                />
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -506,7 +557,9 @@ function JsonDiff() {
                     onClick={() => handleCopy(leftJson, "left")}
                     variant={leftCopied ? "outline" : "ghost"}
                     size="sm"
-                    className={leftCopied ? "text-green-600 border-green-200" : ""}
+                    className={
+                      leftCopied ? "text-green-600 border-green-200" : ""
+                    }
                   >
                     {leftCopied ? (
                       <Check className="h-3 w-3 mr-1" />
@@ -557,7 +610,9 @@ function JsonDiff() {
                     onClick={() => handleCopy(rightJson, "right")}
                     variant={rightCopied ? "outline" : "ghost"}
                     size="sm"
-                    className={rightCopied ? "text-green-600 border-green-200" : ""}
+                    className={
+                      rightCopied ? "text-green-600 border-green-200" : ""
+                    }
                   >
                     {rightCopied ? (
                       <Check className="h-3 w-3 mr-1" />

@@ -8,3 +8,4 @@ alwaysApply: true
 - do not ever suggest to start the development server because most of the times I have a developmet server running anytime so don't ever do that
 - when ever you add some component first check if shadcn component has it, like for example a button you should not ever re-create a button from scratch just use what is provided from shadcn
 - never write svgs from scratch I am using lucide-react icons component lib check [package.json](mdc:package.json) you will see lucide icons
+- never remove my comments and console logs, I do that for myself in case of debugging, so it only when I say it else just leave it
