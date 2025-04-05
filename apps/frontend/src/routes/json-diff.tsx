@@ -48,8 +48,7 @@ function JsonDiff() {
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState<string>("");
 
-  console.log('summary ', summary)
-  
+  // console.log('summary ', summary)
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
