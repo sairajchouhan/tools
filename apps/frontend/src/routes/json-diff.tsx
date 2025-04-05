@@ -1,3 +1,4 @@
+import { marked } from 'marked';
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, ReactNode, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
   AlertCircle,
   Sparkles,
 } from "lucide-react";
-import { useChat } from "@ai-sdk/react";
 import { getChatUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/json-diff")({
@@ -45,24 +45,45 @@ function JsonDiff() {
   const [viewMode, setViewMode] = useState<"edit" | "diff">("edit");
   const [leftCopied, setLeftCopied] = useState(false);
   const [rightCopied, setRightCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState<string>("");
 
-  const { messages, handleSubmit, setInput, input, status } = useChat({
-    api: getChatUrl(),
-  });
+  console.log('summary ', summary)
+  
 
-  console.log("string", {
-    messages,
-    input,
-    status,
-  });
 
-  useEffect(() => {
-    if (leftJson && rightJson) {
-      setInput(
-        `Compare these two JSONs:\n\nJSON 1:\n${leftJson}\n\nJSON 2:\n${rightJson}`
-      );
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setSummary(""); // Clear previous summary
+    setError(""); // Clear previous errors
+    
+    try {
+      const prompt = `Compare these two JSONs:\n\nJSON 1:\n${leftJson}\n\nJSON 2:\n${rightJson}`;
+
+      const response = await fetch(getChatUrl(), {
+        method: "POST",
+        body: JSON.stringify({ prompt }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      if (!data.text) {
+        throw new Error("No text received from the server");
+      }
+      
+      const html = await marked(data.text);
+      setSummary(html);
+    } catch (err) {
+      console.error("Error summarizing JSON:", err);
+      setError(`Failed to summarize: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLoading(false);
     }
-  }, [leftJson, rightJson, setInput]);
+  };
 
   // Load sample data for demonstration
   const loadSampleData = () => {
@@ -352,6 +373,7 @@ function JsonDiff() {
     setRightJson("");
     setDiffOutput(null);
     setError("");
+    setSummary("");
     setViewMode("edit");
   };
 
@@ -478,11 +500,11 @@ function JsonDiff() {
               <form onSubmit={handleSubmit}>
                 <Button
                   variant="default"
-                  disabled={!leftJson || !rightJson}
+                  disabled={!leftJson || !rightJson || loading}
                   type="submit"
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Summarize
+                  {loading ? "Summarizing..." : "Summarize"}
                 </Button>
               </form>
               <Button onClick={resetFields} variant="outline">
@@ -508,18 +530,21 @@ function JsonDiff() {
         </div>
       )}
 
-      {messages.length > 0 && (
-        <div className="mb-6 p-4 bg-white rounded-md border border-gray-200 shadow-sm prose prose-sm max-w-none">
-          {messages.map((message) => (
-            <div key={message.id} className="mb-4">
-              {message.role === "assistant" && (
-                <div
-                  className="markdown-content"
-                  dangerouslySetInnerHTML={{ __html: message.content }}
-                />
-              )}
-            </div>
-          ))}
+      {loading && (
+        <div className="mb-6 p-4 bg-white rounded-md border border-gray-200 shadow-sm mt-6">
+          <div className="flex items-center space-x-2">
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            <span className="text-sm text-gray-600">Analyzing differences...</span>
+          </div>
+        </div>
+      )}
+
+      {summary && !loading && (
+        <div className="mb-6 p-4 bg-white rounded-md border border-gray-200 shadow-sm">
+          <div 
+            className="prose max-w-none prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-100 prose-th:p-2 prose-td:border prose-td:border-gray-200 prose-td:p-2 prose-td:align-top prose-headings:mt-0 prose-headings:mb-2 prose-p:my-1" 
+            dangerouslySetInnerHTML={{ __html: summary }}
+          />
         </div>
       )}
 
