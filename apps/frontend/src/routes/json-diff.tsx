@@ -294,7 +294,7 @@ function JsonDiff() {
                   : "";
 
                 return (
-                  <div key={i} className={bgClass}>
+                  <div key={i} className={`${bgClass} leading-6`}>
                     {renderSingleSideJson(
                       item,
                       otherSideValue,
@@ -339,7 +339,7 @@ function JsonDiff() {
                 : "";
 
               return (
-                <div key={key} className={bgClass}>
+                <div key={key} className={`${bgClass} leading-6`}>
                   <span
                     className={`font-medium ${hasDifference(diffOutput!.left, diffOutput!.right, keyPath) ? "text-yellow-700" : "text-blue-600"}`}
                   >
