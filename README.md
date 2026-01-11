@@ -1,84 +1,145 @@
-# Turborepo starter
+# Daily Dev Tools
 
-This Turborepo starter is maintained by the Turborepo core team.
+A collection of simple, fast utilities to streamline your daily development workflow. Built with modern web technologies for a smooth, responsive experience.
 
-## Using this example
+## Features
 
-Run the following command:
+### URL Parser
 
-```sh
-npx create-turbo@latest
+Parse and visualize URL components with an interactive editor:
+
+- Break down URLs into protocol, domain, path segments, and query parameters
+- Drag-and-drop reordering of path segments and query params
+- Compare two URLs side-by-side with match scoring
+- Copy individual components or full comparison summaries
+
+### JSON Diff
+
+Compare JSON objects with a visual side-by-side diff viewer:
+
+- Syntax-highlighted comparison with color-coded changes
+- Synchronized scrolling between panels
+- AI-powered diff summarization (via Google Gemini)
+- Load sample data for quick testing
+
+### JSON Formatter
+
+Format and validate JSON with instant feedback:
+
+- Real-time formatting as you type
+- Validation with clear error messages
+- Copy formatted output to clipboard
+- Clean, readable output with proper indentation
+
+## Tech Stack
+
+| Layer               | Technology                                       |
+| ------------------- | ------------------------------------------------ |
+| **Monorepo**        | Turborepo                                        |
+| **Frontend**        | React 19, Vite, TailwindCSS v4, TanStack Router  |
+| **Backend**         | Next.js 15, Vercel AI SDK                        |
+| **AI**              | Google Gemini (gemini-2.0-flash)                 |
+| **UI Components**   | Radix UI, Lucide Icons, class-variance-authority |
+| **Package Manager** | Bun                                              |
+
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh/) v1.2.5 or higher
+- [Node.js](https://nodejs.org/) v18 or higher
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/daily-dev-tools.git
+cd daily-dev-tools
+
+# Install dependencies
+bun install
 ```
 
-## What's inside?
+### Environment Setup
 
-This Turborepo includes the following packages/apps:
+Create environment files for local development:
 
-### Apps and Packages
+**Frontend** (`apps/frontend/.env`):
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+```env
+VITE_BACKEND_URL=http://localhost:3001
+```
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+**Backend** (`apps/backend/.env`):
 
-### Utilities
+```env
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
+```
 
-This Turborepo has some additional tools already setup for you:
+### Development
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+```bash
+# Run both frontend and backend in dev mode
+bun run dev
+
+# Run only frontend (http://localhost:5173)
+bunx turbo run dev --filter=tools-frontend
+
+# Run only backend (http://localhost:3000)
+bunx turbo run dev --filter=tools-backend
+```
 
 ### Build
 
-To build all apps and packages, run the following command:
+```bash
+# Build all apps
+bun run build
 
-```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
+# Build specific app
+bunx turbo run build --filter=tools-frontend
 ```
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+## Project Structure
 
 ```
-cd my-turborepo
-npx turbo login
+daily-dev-tools/
+├── apps/
+│   ├── frontend/              # React + Vite application
+│   │   ├── src/
+│   │   │   ├── components/    # Reusable UI components
+│   │   │   │   └── ui/        # Base components (Button, Input, etc.)
+│   │   │   ├── lib/           # Utilities and helpers
+│   │   │   └── routes/        # TanStack Router pages
+│   │   └── package.json
+│   │
+│   └── backend/               # Next.js API server
+│       └── src/
+│           └── app/
+│               └── api/       # API routes
+│
+├── turbo.json                 # Turborepo configuration
+├── AGENTS.md                  # Guidelines for AI coding agents
+└── package.json               # Root workspace config
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+## Scripts
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+| Command               | Description                        |
+| --------------------- | ---------------------------------- |
+| `bun run dev`         | Start all apps in development mode |
+| `bun run build`       | Build all apps for production      |
+| `bun run lint`        | Run ESLint across all apps         |
+| `bun run format`      | Format code with Prettier          |
+| `bun run check-types` | Run TypeScript type checking       |
 
-```
-npx turbo link
-```
+## Contributing
 
-## Useful Links
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Learn more about the power of Turborepo:
+## License
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
